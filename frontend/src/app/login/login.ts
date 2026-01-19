@@ -3,7 +3,6 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Auth } from '../services/auth';
-import { ProjectNotificationService } from '../services/project-notification.service';
 
 @Component({
   selector: 'app-login',
@@ -20,12 +19,12 @@ export class LoginComponent {
   constructor(
     private fb: FormBuilder,
     private auth: Auth,
-    private router: Router,
-    private projectNotificationService: ProjectNotificationService
+    private router: Router
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+  password: ['', [Validators.required, Validators.minLength(6)]],
+  role: ['student']
     });
   }
 
@@ -34,29 +33,22 @@ export class LoginComponent {
       this.isLoading = true;
       this.errorMessage = '';
 
-      const formData = this.loginForm.value;
-      console.log('Attempting user login for:', formData.email);
+  const formData = this.loginForm.value;
+  console.log('Attempting login for:', formData.email, 'as', formData.role);
       
-      this.auth.login(formData.email, formData.password).subscribe({
+  this.auth.login(formData.email, formData.password, formData.role).subscribe({
         next: (response) => {
-          console.log('User login successful, navigating to home...');
-          // Fetch notifications after login
-          this.projectNotificationService.refreshUserNotifications();
+          console.log('Login successful, navigating to home...');
           this.isLoading = false;
-          
-          // Verify the user role is USER
-          if (response.role === 'USER') {
-            setTimeout(() => {
-              this.router.navigate(['/home']);
-            }, 100);
-          } else {
-            this.errorMessage = 'This account is registered as a company. Please use the company login.';
-          }
+          // Small delay to ensure token is stored, then navigate
+          setTimeout(() => {
+            this.router.navigate(['/home']);
+          }, 100);
         },
         error: (error) => {
           this.isLoading = false;
-          console.error('User login failed:', error);
-          this.errorMessage = error.error?.message || 'Login failed. Please check your credentials or ensure you have a user account.';
+          console.error('Login failed:', error);
+          this.errorMessage = error.error?.message || 'Login failed. Please check your credentials.';
         }
       });
     }

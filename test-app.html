@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CrewUp API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        button { margin: 5px; padding: 10px 15px; cursor: pointer; }
+        input, textarea { margin: 5px; padding: 5px; width: 300px; }
+        .response { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+        .error { background: #ffe6e6; color: red; }
+        .success { background: #e6ffe6; color: green; }
+    </style>
+</head>
+<body>
+    <h1>CrewUp API Test - Likes and Comments Demo</h1>
+    
+    <div class="section">
+        <h2>1. Register & Login</h2>
+        <div>
+            <h3>Register</h3>
+            <input type="text" id="regUsername" placeholder="Username" value="testuser">
+            <input type="email" id="regEmail" placeholder="Email" value="test@example.com">
+            <input type="password" id="regPassword" placeholder="Password" value="password123">
+            <button onclick="register()">Register</button>
+        </div>
+        <div>
+            <h3>Login</h3>
+            <input type="email" id="loginEmail" placeholder="Email" value="test@example.com">
+            <input type="password" id="loginPassword" placeholder="Password" value="password123">
+            <button onclick="login()">Login</button>
+        </div>
+        <div id="authResponse" class="response"></div>
+    </div>
+
+    <div class="section">
+        <h2>2. Create Test Posts</h2>
+        <textarea id="postContent" placeholder="Post content">This is a test post for likes and comments demo! 🚀</textarea>
+        <br>
+        <input type="url" id="postImage" placeholder="Image URL (optional)" value="https://via.placeholder.com/400x300">
+        <br>
+        <button onclick="createPost()">Create Post</button>
+        <div id="postResponse" class="response"></div>
+    </div>
+
+    <div class="section">
+        <h2>3. Test Posts Feed</h2>
+        <button onclick="loadPosts()">Load Posts</button>
+        <div id="postsResponse" class="response"></div>
+        <div id="postsList"></div>
+    </div>
+
+    <script>
+        let token = '';
+        const API_BASE = 'http://localhost:8081/api';
+
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message;
+            element.className = `response ${type}`;
+        }
+
+        async function register() {
+            const username = document.getElementById('regUsername').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('authResponse', `Registration successful: ${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    log('authResponse', `Registration failed: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                log('authResponse', `Registration error: ${error.message}`, 'error');
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    token = data.token;
+                    log('authResponse', `Login successful! Token: ${token.substring(0, 50)}...`, 'success');
+                } else {
+                    log('authResponse', `Login failed: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                log('authResponse', `Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function createPost() {
+            if (!token) {
+                log('postResponse', 'Please login first!', 'error');
+                return;
+            }
+
+            const content = document.getElementById('postContent').value;
+            const imageUrl = document.getElementById('postImage').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/posts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        content, 
+                        imageUrl: imageUrl || undefined 
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('postResponse', `Post created successfully! ID: ${data.id}`, 'success');
+                    loadPosts(); // Refresh posts list
+                } else {
+                    log('postResponse', `Post creation failed: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                log('postResponse', `Post creation error: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadPosts() {
+            if (!token) {
+                log('postsResponse', 'Please login first!', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/posts`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('postsResponse', `Loaded ${data.content.length} posts successfully!`, 'success');
+                    displayPosts(data.content);
+                } else {
+                    log('postsResponse', `Failed to load posts: ${JSON.stringify(data, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                log('postsResponse', `Posts loading error: ${error.message}`, 'error');
+            }
+        }
+
+        function displayPosts(posts) {
+            const postsContainer = document.getElementById('postsList');
+            postsContainer.innerHTML = '';
+
+            posts.forEach(post => {
+                const postDiv = document.createElement('div');
+                postDiv.style.border = '1px solid #ddd';
+                postDiv.style.margin = '10px 0';
+                postDiv.style.padding = '15px';
+                postDiv.style.borderRadius = '8px';
+
+                postDiv.innerHTML = `
+                    <div><strong>@${post.authorUsername}</strong> (ID: ${post.id})</div>
+                    <div style="margin: 10px 0;">${post.content}</div>
+                    ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width: 300px; border-radius: 8px;">` : ''}
+                    <div style="margin: 10px 0; color: #666;">
+                        ❤️ ${post.likesCount} likes | 💬 ${post.commentsCount} comments | 
+                        ${post.isLikedByCurrentUser ? '(You liked this)' : '(Not liked)'}
+                    </div>
+                    <button onclick="toggleLike(${post.id})" ${post.isLikedByCurrentUser ? 'style="color: red;"' : ''}>
+                        ${post.isLikedByCurrentUser ? 'Unlike' : 'Like'} ❤️
+                    </button>
+                    <button onclick="addComment(${post.id})">Add Comment 💬</button>
+                    <button onclick="loadComments(${post.id})">Load Comments</button>
+                    <div id="comments-${post.id}" style="margin-top: 10px;"></div>
+                `;
+
+                postsContainer.appendChild(postDiv);
+            });
+        }
+
+        async function toggleLike(postId) {
+            if (!token) {
+                alert('Please login first!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/posts/${postId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: '{}'
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    console.log('Like toggled successfully:', data);
+                    loadPosts(); // Refresh to show updated like status
+                } else {
+                    alert(`Failed to toggle like: ${JSON.stringify(data)}`);
+                }
+            } catch (error) {
+                alert(`Like error: ${error.message}`);
+            }
+        }
+
+        async function addComment(postId) {
+            const content = prompt('Enter your comment:');
+            if (!content || !token) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/posts/${postId}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ content })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    console.log('Comment added successfully:', data);
+                    loadComments(postId); // Refresh comments
+                    loadPosts(); // Refresh posts to show updated comment count
+                } else {
+                    alert(`Failed to add comment: ${JSON.stringify(data)}`);
+                }
+            } catch (error) {
+                alert(`Comment error: ${error.message}`);
+            }
+        }
+
+        async function loadComments(postId) {
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/posts/${postId}/comments`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const comments = await response.json();
+                
+                if (response.ok) {
+                    const commentsDiv = document.getElementById(`comments-${postId}`);
+                    commentsDiv.innerHTML = '<h4>Comments:</h4>';
+                    
+                    comments.forEach(comment => {
+                        const commentDiv = document.createElement('div');
+                        commentDiv.style.background = '#f9f9f9';
+                        commentDiv.style.padding = '8px';
+                        commentDiv.style.margin = '5px 0';
+                        commentDiv.style.borderRadius = '4px';
+                        commentDiv.innerHTML = `<strong>@${comment.authorUsername}</strong>: ${comment.content}`;
+                        commentsDiv.appendChild(commentDiv);
+                    });
+                } else {
+                    console.error('Failed to load comments:', comments);
+                }
+            } catch (error) {
+                console.error('Comments loading error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
