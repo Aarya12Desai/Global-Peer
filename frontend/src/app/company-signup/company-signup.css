@@ -1,0 +1,55 @@
+.company-signup-container {
+  max-width: 400px;
+  margin: 40px auto;
+  padding: 2rem 2.5rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+}
+.company-signup-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.company-signup-container form > div {
+  margin-bottom: 1rem;
+}
+.company-signup-container label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+}
+.company-signup-container input,
+.company-signup-container textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+.company-signup-container button {
+  width: 100%;
+  padding: 0.7rem;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.2s;
+}
+.company-signup-container button:disabled {
+  background: #b0b0b0;
+  cursor: not-allowed;
+}
+.company-signup-container .error {
+  color: #d32f2f;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+.company-signup-container .success {
+  color: #388e3c;
+  margin-top: 0.5rem;
+  text-align: center;
+}

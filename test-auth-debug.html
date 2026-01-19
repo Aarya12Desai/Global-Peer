@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .container { background: #f8f9fa; padding: 20px; margin: 10px 0; border-radius: 8px; }
+        .test-btn { background: #007bff; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer; }
+        .test-btn:hover { background: #0056b3; }
+        .result { background: white; padding: 15px; margin-top: 10px; border-radius: 5px; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+        .success { border-left: 5px solid #28a745; }
+        .error { border-left: 5px solid #dc3545; }
+        input { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Authentication Debug Test</h1>
+    
+    <div class="container">
+        <h2>1. Register New User (for testing)</h2>
+        <input type="text" id="reg-username" placeholder="Username" value="testuser123">
+        <input type="email" id="reg-email" placeholder="Email" value="testuser123@example.com">
+        <input type="password" id="reg-password" placeholder="Password" value="password123">
+        <button class="test-btn" onclick="registerUser()">Register User</button>
+        <div id="register-result" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>2. Login Test</h2>
+        <input type="email" id="login-email" placeholder="Email" value="testuser123@example.com">
+        <input type="password" id="login-password" placeholder="Password" value="password123">
+        <button class="test-btn" onclick="testLogin()">Login</button>
+        <div id="login-result" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>3. Authentication Status</h2>
+        <button class="test-btn" onclick="checkAuthStatus()">Check Auth Status</button>
+        <button class="test-btn" onclick="clearStorage()">Clear Storage</button>
+        <div id="auth-status-result" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>4. API Test</h2>
+        <button class="test-btn" onclick="testCommunitiesAPI()">Test Communities API</button>
+        <button class="test-btn" onclick="testCreateCommunity()">Test Create Community</button>
+        <div id="api-result" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>5. Direct Navigation Test</h2>
+        <button class="test-btn" onclick="window.open('http://localhost:4200/communities', '_blank')">🏘️ Open Communities Page</button>
+        <button class="test-btn" onclick="window.open('http://localhost:4200/login', '_blank')">🔐 Open Login Page</button>
+        <button class="test-btn" onclick="window.open('http://localhost:4200/home', '_blank')">🏠 Open Home Page</button>
+        <button class="test-btn" onclick="window.open('http://localhost:4200', '_blank')">🌐 Open Main Page</button>
+    </div>
+
+    <script>
+        const baseUrl = 'http://localhost:8081/api';
+
+        function displayResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isError ? 'error' : 'success'}`;
+            element.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+        }
+
+        async function registerUser() {
+            try {
+                const username = document.getElementById('reg-username').value;
+                const email = document.getElementById('reg-email').value;
+                const password = document.getElementById('reg-password').value;
+
+                const response = await fetch(`${baseUrl}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`Registration failed: ${response.status} - ${errorData}`);
+                }
+
+                const result = await response.json();
+                displayResult('register-result', `✅ Registration successful!\nUsername: ${result.username}\nRole: ${result.role}\nID: ${result.id}`);
+            } catch (error) {
+                displayResult('register-result', `❌ Registration error: ${error.message}`, true);
+            }
+        }
+
+        async function testLogin() {
+            try {
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+
+                displayResult('login-result', 'Attempting login...');
+
+                const response = await fetch(`${baseUrl}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`Login failed: ${response.status} - ${errorData}`);
+                }
+
+                const result = await response.json();
+                
+                // Store auth data exactly as the frontend does
+                localStorage.setItem('access_token', result.token);
+                localStorage.setItem('user_id', result.id.toString());
+                localStorage.setItem('user_email', result.email);
+                localStorage.setItem('username', result.username);
+                localStorage.setItem('user_role', result.role);
+
+                displayResult('login-result', `✅ Login successful!\nUsername: ${result.username}\nRole: ${result.role}\nID: ${result.id}\nToken stored: YES\n\nFull response:\n${JSON.stringify(result, null, 2)}`);
+                
+                // Auto-check auth status
+                setTimeout(checkAuthStatus, 1000);
+            } catch (error) {
+                displayResult('login-result', `❌ Login error: ${error.message}`, true);
+            }
+        }
+
+        function checkAuthStatus() {
+            try {
+                const token = localStorage.getItem('access_token');
+                const userId = localStorage.getItem('user_id');
+                const userRole = localStorage.getItem('user_role');
+                const username = localStorage.getItem('username');
+                const email = localStorage.getItem('user_email');
+
+                const authData = {
+                    'access_token': token ? `${token.substring(0, 30)}...` : 'NOT SET',
+                    'user_id': userId || 'NOT SET',
+                    'user_role': userRole || 'NOT SET',
+                    'username': username || 'NOT SET',
+                    'user_email': email || 'NOT SET'
+                };
+
+                const isAuthenticated = !!(token && userId);
+
+                displayResult('auth-status-result', `Authentication Status: ${isAuthenticated ? '✅ AUTHENTICATED' : '❌ NOT AUTHENTICATED'}\n\nStored Data:\n${JSON.stringify(authData, null, 2)}`);
+            } catch (error) {
+                displayResult('auth-status-result', `❌ Error checking auth: ${error.message}`, true);
+            }
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            displayResult('auth-status-result', '🗑️ Local storage cleared');
+        }
+
+        async function testCommunitiesAPI() {
+            try {
+                const token = localStorage.getItem('access_token');
+                
+                if (!token) {
+                    throw new Error('No token found. Please login first.');
+                }
+
+                const response = await fetch(`${baseUrl}/communities/public`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`API call failed: ${response.status} - ${errorData}`);
+                }
+
+                const communities = await response.json();
+                displayResult('api-result', `✅ Communities API working!\nFound ${communities.length} communities\n\nResponse:\n${JSON.stringify(communities, null, 2)}`);
+            } catch (error) {
+                displayResult('api-result', `❌ API error: ${error.message}`, true);
+            }
+        }
+
+        async function testCreateCommunity() {
+            try {
+                const token = localStorage.getItem('access_token');
+                const userRole = localStorage.getItem('user_role');
+                
+                if (!token) {
+                    throw new Error('No token found. Please login first.');
+                }
+
+                if (userRole !== 'COMPANY') {
+                    displayResult('api-result', '⚠️ Only companies can create communities. Current role: ' + userRole, true);
+                    return;
+                }
+
+                const communityData = {
+                    name: `Test Community ${Date.now()}`,
+                    description: 'A test community created via API',
+                    isPublic: true
+                };
+
+                const response = await fetch(`${baseUrl}/communities/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(communityData)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.text();
+                    throw new Error(`Create community failed: ${response.status} - ${errorData}`);
+                }
+
+                const result = await response.json();
+                displayResult('api-result', `✅ Community created!\n\nResponse:\n${JSON.stringify(result, null, 2)}`);
+            } catch (error) {
+                displayResult('api-result', `❌ Create community error: ${error.message}`, true);
+            }
+        }
+
+        // Auto-check auth on page load
+        window.onload = checkAuthStatus;
+    </script>
+</body>
+</html>

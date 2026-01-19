@@ -1,14 +1,17 @@
 import { Injectable, signal } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Auth } from './auth';
 
 export interface Notification {
   id: string;
-  type: 'like' | 'comment' | 'follow' | 'mention' | 'post' | 'system';
+  type: 'like' | 'comment' | 'follow' | 'mention' | 'post' | 'system' | 'project_match';
   title: string;
   message: string;
   timestamp: Date;
   read: boolean;
   avatar?: string;
   userName?: string;
+  userId?: string;
   actionUrl?: string;
 }
 
@@ -18,9 +21,8 @@ export interface Notification {
 export class Notifications {
   private notificationsSignal = signal<Notification[]>([]);
 
-  constructor() {
-    // Initialize with some sample notifications
-    this.loadSampleNotifications();
+  constructor(private http: HttpClient, private auth: Auth) {
+    this.fetchUserNotifications();
   }
 
   get notifications() {
@@ -31,68 +33,26 @@ export class Notifications {
     return this.notificationsSignal().filter(n => !n.read).length;
   }
 
-  private loadSampleNotifications() {
-    const sampleNotifications: Notification[] = [
-      {
-        id: '1',
-        type: 'like',
-        title: 'New Like',
-        message: 'John Doe liked your post',
-        timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-        read: false,
-        userName: 'John Doe',
-        avatar: 'JD'
-      },
-      {
-        id: '2',
-        type: 'comment',
-        title: 'New Comment',
-        message: 'Sarah Miller commented on your post: "Great work on this project!"',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-        read: false,
-        userName: 'Sarah Miller',
-        avatar: 'SM'
-      },
-      {
-        id: '3',
-        type: 'follow',
-        title: 'New Follower',
-        message: 'Alex Johnson started following you',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
-        read: true,
-        userName: 'Alex Johnson',
-        avatar: 'AJ'
-      },
-      {
-        id: '4',
-        type: 'mention',
-        title: 'You were mentioned',
-        message: 'Mike Wilson mentioned you in a post',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-        read: true,
-        userName: 'Mike Wilson',
-        avatar: 'MW'
-      },
-      {
-        id: '5',
-        type: 'system',
-        title: 'Welcome to CrewUp!',
-        message: 'Complete your profile to get the most out of CrewUp',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-        read: true,
-        avatar: 'CU'
-      },
-      {
-        id: '6',
-        type: 'post',
-        title: 'Popular Post',
-        message: 'Your post "Project Launch" has reached 50 likes!',
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
-        read: true
-      }
-    ];
 
-    this.notificationsSignal.set(sampleNotifications);
+  fetchUserNotifications() {
+    const token = this.auth.token;
+    if (!token) {
+      this.notificationsSignal.set([]);
+      return;
+    }
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    this.http.get<Notification[]>(`http://localhost:8081/api/notifications`, { headers })
+      .subscribe({
+        next: (notifications) => {
+          this.notificationsSignal.set(notifications);
+        },
+        error: (err) => {
+          console.error('Failed to fetch notifications:', err);
+          this.notificationsSignal.set([]);
+        }
+      });
   }
 
   markAsRead(notificationId: string) {
@@ -115,9 +75,23 @@ export class Notifications {
   }
 
   deleteNotification(notificationId: string) {
-    const notifications = this.notificationsSignal();
-    const updatedNotifications = notifications.filter(n => n.id !== notificationId);
-    this.notificationsSignal.set(updatedNotifications);
+    const token = this.auth.token;
+    if (!token) return;
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    this.http.delete(`http://localhost:8081/api/notifications/${notificationId}`, { headers })
+      .subscribe({
+        next: () => {
+          // Refresh notifications after successful delete
+          this.fetchUserNotifications();
+        },
+        error: (err) => {
+          console.error('Failed to delete notification:', err);
+        }
+      });
+  }
+
+  clearNotifications() {
+    this.notificationsSignal.set([]);
   }
 
   addNotification(notification: Omit<Notification, 'id' | 'timestamp'>) {
@@ -143,15 +117,20 @@ export class Notifications {
         return '@';
       case 'post':
         return '📄';
+      case 'project_match':
+        return '🤝';
       case 'system':
       default:
         return '🔔';
     }
   }
 
-  formatTimeAgo(timestamp: Date): string {
+  formatTimeAgo(timestamp: Date | string | undefined | null): string {
+    if (!timestamp) return '';
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+    if (isNaN(date.getTime())) return '';
     const now = new Date();
-    const diffMs = now.getTime() - timestamp.getTime();
+    const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));

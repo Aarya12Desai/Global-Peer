@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communities Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .test-btn:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏘️ Communities & Community Chat Test</h1>
+    
+    <div class="container">
+        <h2>1. Authentication</h2>
+        <button class="test-btn" onclick="checkAuth()">Check Auth Status</button>
+        <div>
+            <h3>Quick Login (Test Data)</h3>
+            <input type="text" id="username" placeholder="Username or Email">
+            <input type="password" id="password" placeholder="Password">
+            <button class="test-btn" onclick="testLogin()">Login</button>
+        </div>
+        <div id="auth-result" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>2. Communities</h2>
+        <button class="test-btn" onclick="getPublicCommunities()">Get Public Communities</button>
+        <button class="test-btn" onclick="getMyCommunities()">Get My Communities</button>
+        <button class="test-btn" onclick="getCompanyCommunity()">Get Company Community</button>
+        <div id="communities-result" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>3. Join/Leave Community</h2>
+        <input type="number" id="communityId" placeholder="Community ID">
+        <button class="test-btn" onclick="joinCommunity()">Join Community</button>
+        <button class="test-btn" onclick="leaveCommunity()">Leave Community</button>
+        <div id="join-result" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>4. Community Chat</h2>
+        <select id="chatCommunityId">
+            <option value="">Select Community for Chat</option>
+        </select>
+        <button class="test-btn" onclick="loadChatMessages()">Load Messages</button>
+        <input type="text" id="chatMessage" placeholder="Type your message">
+        <button class="test-btn" onclick="sendChatMessage()">Send Message</button>
+        <div id="chat-result" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>5. Quick Actions</h2>
+        <button class="test-btn" onclick="window.open('http://localhost:4200/communities', '_blank')">Open Communities Page</button>
+        <button class="test-btn" onclick="window.open('http://localhost:4200/community-chat', '_blank')">Open Community Chat</button>
+        <button class="test-btn" onclick="window.open('http://localhost:4200/login', '_blank')">Open Login Page</button>
+    </div>
+
+    <script>
+        const baseUrl = 'http://localhost:8081/api';
+        let currentUser = null;
+
+        function getAuthHeaders() {
+            const token = localStorage.getItem('access_token');
+            if (!token) throw new Error('No token found. Please login first.');
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        function displayResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isError ? 'error' : 'success'}`;
+            element.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+        }
+
+        async function checkAuth() {
+            try {
+                const token = localStorage.getItem('access_token');
+                const userId = localStorage.getItem('user_id');
+                const userRole = localStorage.getItem('user_role');
+                
+                if (!token) {
+                    displayResult('auth-result', 'Not authenticated. Please login.', true);
+                    return;
+                }
+
+                // Test API call
+                const response = await fetch(`${baseUrl}/communities/public`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (response.ok) {
+                    displayResult('auth-result', `✅ Authenticated!\nUser ID: ${userId}\nRole: ${userRole}\nToken: ${token.substring(0, 30)}...`);
+                } else {
+                    throw new Error('Token validation failed');
+                }
+            } catch (error) {
+                displayResult('auth-result', `❌ Auth error: ${error.message}`, true);
+            }
+        }
+
+        async function testLogin() {
+            try {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                if (!username || !password) {
+                    throw new Error('Please enter username and password');
+                }
+
+                const response = await fetch(`${baseUrl}/auth/signin`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Login failed: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                localStorage.setItem('access_token', result.token);
+                localStorage.setItem('user_id', result.id);
+                localStorage.setItem('user_role', result.role);
+                localStorage.setItem('username', result.username);
+
+                displayResult('auth-result', `✅ Login successful!\nUsername: ${result.username}\nRole: ${result.role}`);
+            } catch (error) {
+                displayResult('auth-result', `❌ Login error: ${error.message}`, true);
+            }
+        }
+
+        async function getPublicCommunities() {
+            try {
+                const response = await fetch(`${baseUrl}/communities/public`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const communities = await response.json();
+                displayResult('communities-result', `📋 Found ${communities.length} public communities:\n\n${JSON.stringify(communities, null, 2)}`);
+                
+                // Populate community select for chat
+                const select = document.getElementById('chatCommunityId');
+                select.innerHTML = '<option value="">Select Community for Chat</option>';
+                communities.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c.id;
+                    option.textContent = `${c.name} (ID: ${c.id})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                displayResult('communities-result', `❌ Error: ${error.message}`, true);
+            }
+        }
+
+        async function getMyCommunities() {
+            try {
+                const response = await fetch(`${baseUrl}/communities/my-communities`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const communities = await response.json();
+                displayResult('communities-result', `👥 My communities (${communities.length}):\n\n${JSON.stringify(communities, null, 2)}`);
+            } catch (error) {
+                displayResult('communities-result', `❌ Error: ${error.message}`, true);
+            }
+        }
+
+        async function getCompanyCommunity() {
+            try {
+                const response = await fetch(`${baseUrl}/communities/company-community`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const community = await response.json();
+                displayResult('communities-result', `🏢 Company community:\n\n${JSON.stringify(community, null, 2)}`);
+            } catch (error) {
+                displayResult('communities-result', `❌ Error: ${error.message}`, true);
+            }
+        }
+
+        async function joinCommunity() {
+            try {
+                const communityId = document.getElementById('communityId').value;
+                if (!communityId) throw new Error('Please enter community ID');
+
+                const response = await fetch(`${baseUrl}/communities/${communityId}/join`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({})
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                displayResult('join-result', `✅ Successfully joined: ${result.communityName}`);
+            } catch (error) {
+                displayResult('join-result', `❌ Error: ${error.message}`, true);
+            }
+        }
+
+        async function leaveCommunity() {
+            try {
+                const communityId = document.getElementById('communityId').value;
+                if (!communityId) throw new Error('Please enter community ID');
+
+                const response = await fetch(`${baseUrl}/communities/${communityId}/leave`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({})
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                displayResult('join-result', `✅ ${result.message}`);
+            } catch (error) {
+                displayResult('join-result', `❌ Error: ${error.message}`, true);
+            }
+        }
+
+        async function loadChatMessages() {
+            try {
+                const communityId = document.getElementById('chatCommunityId').value;
+                if (!communityId) throw new Error('Please select a community');
+
+                const response = await fetch(`${baseUrl}/community-chat/${communityId}/messages`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const messages = await response.json();
+                displayResult('chat-result', `💬 Messages (${messages.length}):\n\n${JSON.stringify(messages, null, 2)}`);
+            } catch (error) {
+                displayResult('chat-result', `❌ Error: ${error.message}`, true);
+            }
+        }
+
+        async function sendChatMessage() {
+            try {
+                const communityId = document.getElementById('chatCommunityId').value;
+                const message = document.getElementById('chatMessage').value;
+                
+                if (!communityId) throw new Error('Please select a community');
+                if (!message.trim()) throw new Error('Please enter a message');
+
+                const response = await fetch(`${baseUrl}/community-chat/${communityId}/send`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ message: message.trim() })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                displayResult('chat-result', `✅ Message sent!\nID: ${result.id}\nMessage: ${result.message}`);
+                
+                document.getElementById('chatMessage').value = '';
+                setTimeout(loadChatMessages, 1000); // Auto-reload messages
+            } catch (error) {
+                displayResult('chat-result', `❌ Error: ${error.message}`, true);
+            }
+        }
+
+        // Auto-check auth on page load
+        window.onload = checkAuth;
+    </script>
+</body>
+</html>

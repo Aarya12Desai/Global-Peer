@@ -11,7 +11,7 @@ import { PostService } from '../services/post.service';
   template: `
     <div class="comments-container">
       <!-- Add new comment -->
-      <div class="add-comment-section">
+      <div class="add-comment-section" *ngIf="showAddCommentBox !== false">
         <div class="comment-input-container">
           <div class="user-avatar-small">{{ getCurrentUserInitial() }}</div>
           <textarea 
@@ -36,6 +36,7 @@ import { PostService } from '../services/post.service';
           </button>
         </div>
       </div>
+  @Input() showAddCommentBox: boolean = true;
 
       <!-- Comments list -->
       <div class="comments-list" *ngIf="comments.length > 0">
@@ -85,8 +86,8 @@ import { PostService } from '../services/post.service';
 
       <!-- No comments message -->
       <div class="no-comments" *ngIf="comments.length === 0 && !isLoading">
-        <div class="no-comments-icon">💬</div>
-        <p>No comments yet. Be the first to comment!</p>
+        <div class="no-comments-icon"></div>
+        <p></p>
       </div>
 
       <!-- Loading indicator -->
@@ -382,6 +383,7 @@ import { PostService } from '../services/post.service';
 export class CommentsComponent implements OnInit {
   @Input() postId!: number;
   @Input() comments: Comment[] = [];
+  @Input() showAddCommentBox: boolean = true;
   @Output() commentAdded = new EventEmitter<Comment>();
   @Output() commentsLoaded = new EventEmitter<Comment[]>();
 

@@ -9,13 +9,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.auth.dto.CompanyRegisterRequest;
 import com.example.auth.dto.JwtResponse;
 import com.example.auth.dto.LoginRequest;
 import com.example.auth.dto.RegisterRequest;
 import com.example.auth.exception.UserAlreadyExistsException;
 import com.example.auth.exception.UserNotFoundException;
+import com.example.auth.model.Community;
+import com.example.auth.model.CommunityMembership;
+import com.example.auth.model.MembershipRole;
 import com.example.auth.model.Role;
 import com.example.auth.model.User;
+import com.example.auth.repository.CommunityMembershipRepository;
+import com.example.auth.repository.CommunityRepository;
 import com.example.auth.repository.UserRepository;
 import com.example.auth.util.JwtUtil;
 
@@ -34,6 +40,12 @@ public class AuthService {
     
     @Autowired
     private JwtUtil jwtUtil;
+    
+    @Autowired
+    private CommunityRepository communityRepository;
+    
+    @Autowired
+    private CommunityMembershipRepository membershipRepository;
     
     public JwtResponse registerUser(RegisterRequest registerRequest) {
         // Basic validation
@@ -74,6 +86,73 @@ public class AuthService {
         );
     }
 
+    public JwtResponse registerCompany(CompanyRegisterRequest request) {
+        // Basic validation
+        if (request.getCompanyName() == null || request.getCompanyName().isBlank()
+                || request.getEmail() == null || request.getEmail().isBlank()
+                || request.getPassword() == null || request.getPassword().isBlank()) {
+            throw new IllegalArgumentException("companyName, email and password are required");
+        }
+        
+        // Check if email exists
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new UserAlreadyExistsException("Email is already in use!");
+        }
+        
+        // Create new company user
+        User user = new User();
+        user.setUsername(request.getCompanyName()); // Use company name as username
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(Role.COMPANY);
+        user.setCompanyName(request.getCompanyName());
+        user.setCompanyWebsite(request.getCompanyWebsite());
+        user.setCompanyContactName(request.getCompanyContactName());
+        user.setCompanyContactPhone(request.getCompanyContactPhone());
+        
+        User savedUser = userRepository.save(user);
+        
+        // Automatically create a community for this company
+        Community companyCommunity = new Community();
+        companyCommunity.setName(request.getCompanyName() + " Community");
+        companyCommunity.setDescription("Official community for " + request.getCompanyName() + 
+                                      ". Connect with our team and stay updated on company news, opportunities, and discussions.");
+        companyCommunity.setCompany(savedUser);
+        companyCommunity.setCompanyId(savedUser.getId());
+        companyCommunity.setCompanyName(savedUser.getCompanyName());
+        companyCommunity.setPublic(true); // Company communities are public by default
+        
+        Community savedCommunity = communityRepository.save(companyCommunity);
+        
+        // Add the company as admin of their own community
+        CommunityMembership adminMembership = new CommunityMembership();
+        adminMembership.setUser(savedUser);
+        adminMembership.setUserId(savedUser.getId());
+        adminMembership.setUsername(savedUser.getUsername());
+        adminMembership.setCommunity(savedCommunity);
+        adminMembership.setCommunityId(savedCommunity.getId());
+        adminMembership.setRole(MembershipRole.ADMIN);
+        membershipRepository.save(adminMembership);
+        
+        System.out.println("Company registered: " + savedUser.getCompanyName() + 
+                          " with auto-created community: " + savedCommunity.getName());
+        
+        // Generate JWT token
+        String jwt = jwtUtil.generateJwtToken(user.getUsername());
+        
+        return new JwtResponse(
+            jwt,
+            user.getId(),
+            user.getUsername(),
+            user.getEmail(),
+            user.getRole().name(),
+            user.getCompanyName(),
+            user.getCompanyWebsite(),
+            user.getCompanyContactName(),
+            user.getCompanyContactPhone()
+        );
+    }
+
     // Student/company-specific registration removed. Use registerUser(RegisterRequest) instead.
     
     public JwtResponse authenticateUser(LoginRequest loginRequest) {
@@ -102,12 +181,26 @@ public class AuthService {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String jwt = jwtUtil.generateJwtToken(userDetails.getUsername());
         
-        return new JwtResponse(
-            jwt,
-            user.getId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getRole().name()
-        );
+        if (user.getRole() == Role.COMPANY) {
+            return new JwtResponse(
+                jwt,
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().name(),
+                user.getCompanyName(),
+                user.getCompanyWebsite(),
+                user.getCompanyContactName(),
+                user.getCompanyContactPhone()
+            );
+        } else {
+            return new JwtResponse(
+                jwt,
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().name()
+            );
+        }
     }
 }

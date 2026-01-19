@@ -16,12 +16,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.auth.dto.CommentResponse;
 import com.example.auth.dto.CreateCommentRequest;
 import com.example.auth.dto.CreatePostRequest;
 import com.example.auth.dto.MessageResponse;
 import com.example.auth.dto.PostResponse;
+import com.example.auth.service.FileStorageService;
 import com.example.auth.service.PostService;
 
 import jakarta.validation.Valid;
@@ -34,6 +36,9 @@ public class PostController {
     @Autowired
     private PostService postService;
     
+    @Autowired
+    private FileStorageService fileStorageService;
+    
     // Create a new post
     @PostMapping
     public ResponseEntity<PostResponse> createPost(
@@ -42,6 +47,49 @@ public class PostController {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         PostResponse post = postService.createPost(request, userDetails.getUsername());
         return ResponseEntity.ok(post);
+    }
+    
+    // Create a new post with image upload
+    @PostMapping("/with-image")
+    public ResponseEntity<PostResponse> createPostWithImage(
+            @RequestParam("content") String content,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            Authentication authentication) {
+        try {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            
+            // Validate content
+            if (content == null || content.trim().isEmpty()) {
+                throw new RuntimeException("Post content cannot be empty");
+            }
+            
+            if (content.length() > 1000) {
+                throw new RuntimeException("Post content cannot exceed 1000 characters");
+            }
+            
+            String imageUrl = null;
+            if (image != null && !image.isEmpty()) {
+                // Validate image
+                String contentType = image.getContentType();
+                if (contentType == null || !contentType.startsWith("image/")) {
+                    throw new RuntimeException("Only image files are allowed");
+                }
+                
+                if (image.getSize() > 5 * 1024 * 1024) {
+                    throw new RuntimeException("File size should not exceed 5MB");
+                }
+                
+                String fileName = fileStorageService.storeFile(image);
+                imageUrl = "/api/files/images/" + fileName;
+            }
+            
+            CreatePostRequest request = new CreatePostRequest(content.trim(), imageUrl);
+            PostResponse post = postService.createPost(request, userDetails.getUsername());
+            return ResponseEntity.ok(post);
+            
+        } catch (Exception ex) {
+            throw new RuntimeException("Could not create post: " + ex.getMessage());
+        }
     }
     
     // Get all posts (feed) with pagination

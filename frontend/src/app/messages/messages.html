@@ -1,0 +1,33 @@
+<div class="messages-page">
+  <div class="sidebar">
+  <input type="text" placeholder="Search..." [(ngModel)]="searchQuery" (input)="onSearchChange()" />
+    <ul class="conversation-list">
+      <li *ngFor="let conv of filteredConversations()" [class.active]="conv.id === activeConversationId" (click)="selectConversation(conv.id)">
+        <span class="avatar">{{conv.participantAvatar}}</span>
+        <span class="name">{{conv.participantName}}</span>
+        <span class="last-message">{{conv.lastMessage}}</span>
+        <span *ngIf="conv.unreadCount > 0" class="unread-badge">{{conv.unreadCount}}</span>
+      </li>
+    </ul>
+  </div>
+  <div class="chat-area">
+    <div class="chat-header" *ngIf="activeConversation">
+      <span class="avatar">{{activeConversation.participantAvatar}}</span>
+      <span class="name">{{activeConversation.participantName}}</span>
+    </div>
+    <div class="chat-messages" #messagesContainer>
+      <div *ngFor="let msg of activeConversation?.messages" class="message" [class.me]="msg.senderId === 'current-user'">
+        <span class="avatar">{{msg.senderAvatar}}</span>
+        <span class="content">{{msg.content}}</span>
+        <span class="timestamp">{{formatMessageTime(msg.timestamp)}}</span>
+      </div>
+    </div>
+    <div class="chat-input" *ngIf="activeConversation">
+      <textarea [(ngModel)]="newMessageText" (input)="onInputChange($event)" (keydown)="onKeyDown($event)" placeholder="Type a message..."></textarea>
+      <button (click)="sendMessage()">Send</button>
+    </div>
+    <div *ngIf="!activeConversation" class="empty-chat">
+      <p>Select a conversation to start messaging.</p>
+    </div>
+  </div>
+</div>

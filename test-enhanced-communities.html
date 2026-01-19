@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Communities Feature Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .test-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 8px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        .test-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .company-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+        }
+        .user-btn {
+            background: linear-gradient(45deg, #007bff, #6f42c1);
+        }
+        .danger-btn {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #495057;
+        }
+        .workflow-section {
+            background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        .feature-highlight {
+            background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .step-counter {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏘️ Enhanced Communities Feature Testing</h1>
+        <p>Comprehensive testing suite for the enhanced community management system with automatic company communities and multi-community chat support.</p>
+    </div>
+
+    <div class="container workflow-section">
+        <h2>🔄 Complete User Workflow Testing</h2>
+        <div class="feature-highlight">
+            <h3>✨ New Features Implemented:</h3>
+            <ul>
+                <li><strong>Automatic Company Communities:</strong> Each company gets their own community automatically upon registration</li>
+                <li><strong>Multi-Community Chat:</strong> Users can join multiple communities and chat in each one</li>
+                <li><strong>Enhanced UI:</strong> Dedicated company community tab for company users</li>
+                <li><strong>Community-Specific Messaging:</strong> Chat messages are scoped to specific communities</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🔐 Authentication & Setup</h2>
+        <div class="test-section">
+            <h3><span class="step-counter">1</span>Check Authentication Status</h3>
+            <button class="test-button" onclick="checkAuth()">Check Current Auth Status</button>
+            <div id="auth-status" class="result info">Click "Check Current Auth Status" to verify authentication...</div>
+        </div>
+
+        <div class="test-section">
+            <h3><span class="step-counter">2</span>Quick Registration for Testing</h3>
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 300px;">
+                    <h4>Register New Company (Gets Auto Community)</h4>
+                    <label>Company Name:</label>
+                    <input type="text" id="company-name" placeholder="e.g., TechCorp Inc.">
+                    <label>Email:</label>
+                    <input type="email" id="company-email" placeholder="company@techcorp.com">
+                    <label>Password:</label>
+                    <input type="password" id="company-password" placeholder="company123">
+                    <button class="test-button company-btn" onclick="registerCompany()">Register Company</button>
+                    <div id="company-register-result" class="result"></div>
+                </div>
+                <div style="flex: 1; min-width: 300px;">
+                    <h4>Register New User</h4>
+                    <label>Username:</label>
+                    <input type="text" id="user-name" placeholder="user123">
+                    <label>Email:</label>
+                    <input type="email" id="user-email" placeholder="user@email.com">
+                    <label>Password:</label>
+                    <input type="password" id="user-password" placeholder="user123">
+                    <button class="test-button user-btn" onclick="registerUser()">Register User</button>
+                    <div id="user-register-result" class="result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🏢 Company Features Testing</h2>
+        <div class="test-section">
+            <h3><span class="step-counter">3</span>Company Community Management</h3>
+            <button class="test-button company-btn" onclick="getCompanyCommunity()">Get My Company Community</button>
+            <button class="test-button" onclick="createAdditionalCommunity()">Create Additional Community</button>
+            <div id="company-community-result" class="result"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>👥 User Community Features</h2>
+        <div class="test-section">
+            <h3><span class="step-counter">4</span>Community Discovery & Management</h3>
+            <button class="test-button" onclick="getPublicCommunities()">Browse Public Communities</button>
+            <button class="test-button" onclick="getMyCommunities()">My Joined Communities</button>
+            <div id="communities-list-result" class="result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3><span class="step-counter">5</span>Join/Leave Communities</h3>
+            <label>Community ID to Join:</label>
+            <input type="number" id="join-community-id" placeholder="Enter community ID from list above">
+            <button class="test-button user-btn" onclick="joinCommunity()">Join Community</button>
+            
+            <label>Community ID to Leave:</label>
+            <input type="number" id="leave-community-id" placeholder="Enter community ID">
+            <button class="test-button danger-btn" onclick="leaveCommunity()">Leave Community</button>
+            <div id="join-leave-result" class="result"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>💬 Community-Specific Chat Testing</h2>
+        <div class="test-section">
+            <h3><span class="step-counter">6</span>Community Chat Operations</h3>
+            <label>Select Community for Chat:</label>
+            <select id="chat-community-select">
+                <option value="">Select a community...</option>
+            </select>
+            <button class="test-button" onclick="loadCommunityMessages()">Load Community Messages</button>
+            
+            <label>Send Message to Selected Community:</label>
+            <textarea id="chat-message" rows="3" placeholder="Enter your message..."></textarea>
+            <button class="test-button" onclick="sendCommunityMessage()">Send Message</button>
+            <div id="chat-result" class="result"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>🔗 Quick Navigation</h2>
+        <div class="test-section">
+            <h3>Application Links</h3>
+            <button class="test-button" onclick="window.open('http://localhost:4200', '_blank')">🌐 Open Frontend App</button>
+            <button class="test-button" onclick="window.open('http://localhost:4200/communities', '_blank')">🏘️ Communities Page</button>
+            <button class="test-button" onclick="window.open('http://localhost:4200/community-chat', '_blank')">💬 Community Chat</button>
+            <button class="test-button" onclick="window.open('http://localhost:4200/login', '_blank')">🔐 Login Page</button>
+        </div>
+    </div>
+
+    <script>
+        const baseUrl = 'http://localhost:8081/api';
+        let currentUser = null;
+        
+        function getAuthHeaders() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                throw new Error('No authentication token found. Please login first.');
+            }
+            return {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            };
+        }
+
+        function displayResult(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.className = `result ${isError ? 'error' : 'success'}`;
+            element.textContent = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+        }
+
+        function displayInfo(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.className = 'result info';
+            element.textContent = message;
+        }
+
+        async function checkAuth() {
+            try {
+                const token = localStorage.getItem('access_token');
+                const userId = localStorage.getItem('user_id');
+                const userRole = localStorage.getItem('user_role');
+                const username = localStorage.getItem('username');
+
+                if (!token || !userId || !userRole) {
+                    displayResult('auth-status', 'Not authenticated. Please register/login first.', true);
+                    return;
+                }
+
+                // Test token with a simple API call
+                const response = await fetch(`${baseUrl}/communities/public`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (response.ok) {
+                    currentUser = { userId, userRole, username };
+                    displayResult('auth-status', 
+                        `✅ Authenticated as: ${username} (${userRole})\nUser ID: ${userId}\nToken: ${token.substring(0, 30)}...`
+                    );
+                    
+                    // Load communities for chat dropdown
+                    await loadCommunitiesForChat();
+                } else {
+                    throw new Error(`API test failed: ${response.status}`);
+                }
+            } catch (error) {
+                displayResult('auth-status', `❌ Authentication failed: ${error.message}`, true);
+            }
+        }
+
+        async function registerCompany() {
+            try {
+                const name = document.getElementById('company-name').value.trim();
+                const email = document.getElementById('company-email').value.trim();
+                const password = document.getElementById('company-password').value.trim();
+
+                if (!name || !email || !password) {
+                    throw new Error('All fields are required');
+                }
+
+                displayInfo('company-register-result', 'Registering company...');
+
+                const response = await fetch(`${baseUrl}/auth/company-signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        companyName: name,
+                        email: email,
+                        password: password
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                
+                // Store auth info
+                localStorage.setItem('access_token', result.token);
+                localStorage.setItem('user_id', result.id);
+                localStorage.setItem('user_role', result.role);
+                localStorage.setItem('username', result.username);
+
+                displayResult('company-register-result', 
+                    `✅ Company registered successfully!\n\nCompany: ${result.companyName}\nAuto Community: Should be created automatically\n\nToken stored. You can now test company features.`
+                );
+
+                // Clear form
+                document.getElementById('company-name').value = '';
+                document.getElementById('company-email').value = '';
+                document.getElementById('company-password').value = '';
+
+                // Auto check auth
+                setTimeout(checkAuth, 1000);
+            } catch (error) {
+                displayResult('company-register-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function registerUser() {
+            try {
+                const username = document.getElementById('user-name').value.trim();
+                const email = document.getElementById('user-email').value.trim();
+                const password = document.getElementById('user-password').value.trim();
+
+                if (!username || !email || !password) {
+                    throw new Error('All fields are required');
+                }
+
+                displayInfo('user-register-result', 'Registering user...');
+
+                const response = await fetch(`${baseUrl}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: username,
+                        email: email,
+                        password: password
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                
+                // Store auth info
+                localStorage.setItem('access_token', result.token);
+                localStorage.setItem('user_id', result.id);
+                localStorage.setItem('user_role', result.role);
+                localStorage.setItem('username', result.username);
+
+                displayResult('user-register-result', 
+                    `✅ User registered successfully!\n\nUsername: ${result.username}\nRole: ${result.role}\n\nToken stored. You can now test user features.`
+                );
+
+                // Clear form
+                document.getElementById('user-name').value = '';
+                document.getElementById('user-email').value = '';
+                document.getElementById('user-password').value = '';
+
+                // Auto check auth
+                setTimeout(checkAuth, 1000);
+            } catch (error) {
+                displayResult('user-register-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function getCompanyCommunity() {
+            try {
+                displayInfo('company-community-result', 'Loading company community...');
+                
+                const response = await fetch(`${baseUrl}/communities/company-community`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const community = await response.json();
+                displayResult('company-community-result', 
+                    `🏢 Company Community Found:\n\nID: ${community.id}\nName: ${community.name}\nDescription: ${community.description}\nMembers: ${community.memberCount}\nPublic: ${community.isPublic}`
+                );
+            } catch (error) {
+                displayResult('company-community-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function createAdditionalCommunity() {
+            try {
+                const name = prompt('Enter community name:');
+                const description = prompt('Enter community description:');
+                if (!name || !description) return;
+
+                displayInfo('company-community-result', 'Creating additional community...');
+
+                const response = await fetch(`${baseUrl}/communities/create`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        name: name,
+                        description: description,
+                        isPublic: true
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                displayResult('company-community-result', 
+                    `✅ Additional community created!\n\nCommunity ID: ${result.communityId}\nName: ${result.communityName}`
+                );
+            } catch (error) {
+                displayResult('company-community-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function getPublicCommunities() {
+            try {
+                displayInfo('communities-list-result', 'Loading public communities...');
+                
+                const response = await fetch(`${baseUrl}/communities/public`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const communities = await response.json();
+                displayResult('communities-list-result', 
+                    `📋 Found ${communities.length} public communities:\n\n` +
+                    communities.map(c => `ID: ${c.id} | ${c.name} by ${c.companyName}\n   └─ ${c.memberCount} members | ${c.description.substring(0, 50)}...`).join('\n\n')
+                );
+
+                await loadCommunitiesForChat();
+            } catch (error) {
+                displayResult('communities-list-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function getMyCommunities() {
+            try {
+                displayInfo('communities-list-result', 'Loading my communities...');
+                
+                const response = await fetch(`${baseUrl}/communities/my-communities`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const memberships = await response.json();
+                displayResult('communities-list-result', 
+                    `👥 You are a member of ${memberships.length} communities:\n\n` +
+                    memberships.map(m => `ID: ${m.id} | ${m.communityName} (${m.role})\n   └─ Joined: ${new Date(m.joinedAt).toLocaleDateString()}`).join('\n\n')
+                );
+            } catch (error) {
+                displayResult('communities-list-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function joinCommunity() {
+            try {
+                const communityId = document.getElementById('join-community-id').value;
+                if (!communityId) {
+                    throw new Error('Community ID is required');
+                }
+
+                displayInfo('join-leave-result', 'Joining community...');
+
+                const response = await fetch(`${baseUrl}/communities/${communityId}/join`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({})
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                displayResult('join-leave-result', 
+                    `✅ Successfully joined: ${result.communityName}`
+                );
+
+                await loadCommunitiesForChat();
+            } catch (error) {
+                displayResult('join-leave-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function leaveCommunity() {
+            try {
+                const communityId = document.getElementById('leave-community-id').value;
+                if (!communityId) {
+                    throw new Error('Community ID is required');
+                }
+
+                if (!confirm('Are you sure you want to leave this community?')) {
+                    return;
+                }
+
+                displayInfo('join-leave-result', 'Leaving community...');
+
+                const response = await fetch(`${baseUrl}/communities/${communityId}/leave`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({})
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                displayResult('join-leave-result', 
+                    `✅ ${result.message}`
+                );
+
+                await loadCommunitiesForChat();
+            } catch (error) {
+                displayResult('join-leave-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function loadCommunitiesForChat() {
+            try {
+                const response = await fetch(`${baseUrl}/communities/my-communities`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (response.ok) {
+                    const memberships = await response.json();
+                    const select = document.getElementById('chat-community-select');
+                    select.innerHTML = '<option value="">Select a community...</option>';
+                    
+                    memberships.forEach(m => {
+                        const option = document.createElement('option');
+                        option.value = m.communityId;
+                        option.textContent = `${m.communityName} (${m.role})`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading communities for chat:', error);
+            }
+        }
+
+        async function loadCommunityMessages() {
+            try {
+                const communityId = document.getElementById('chat-community-select').value;
+                if (!communityId) {
+                    throw new Error('Please select a community first');
+                }
+
+                displayInfo('chat-result', 'Loading community messages...');
+
+                const response = await fetch(`${baseUrl}/community-chat/${communityId}/messages`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const messages = await response.json();
+                const communityName = document.getElementById('chat-community-select').selectedOptions[0].textContent;
+                
+                displayResult('chat-result', 
+                    `💬 Messages in ${communityName}:\n\n` +
+                    (messages.length === 0 ? 'No messages yet!' : 
+                    messages.map(m => `[${new Date(m.createdAt).toLocaleString()}] ${m.senderCompanyName}: ${m.message}`).join('\n'))
+                );
+            } catch (error) {
+                displayResult('chat-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function sendCommunityMessage() {
+            try {
+                const communityId = document.getElementById('chat-community-select').value;
+                const message = document.getElementById('chat-message').value.trim();
+                
+                if (!communityId) {
+                    throw new Error('Please select a community first');
+                }
+                if (!message) {
+                    throw new Error('Please enter a message');
+                }
+
+                displayInfo('chat-result', 'Sending message...');
+
+                const response = await fetch(`${baseUrl}/community-chat/${communityId}/send`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ message: message })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+
+                const result = await response.json();
+                displayResult('chat-result', 
+                    `✅ Message sent successfully!\n\nMessage ID: ${result.id}\nTo: ${result.communityName}`
+                );
+
+                // Clear message input
+                document.getElementById('chat-message').value = '';
+
+                // Auto-reload messages
+                setTimeout(loadCommunityMessages, 1000);
+            } catch (error) {
+                displayResult('chat-result', `Error: ${error.message}`, true);
+            }
+        }
+
+        // Auto-check auth on page load
+        window.onload = function() {
+            checkAuth();
+        };
+    </script>
+</body>
+</html>

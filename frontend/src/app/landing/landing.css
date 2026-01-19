@@ -38,6 +38,48 @@
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.login-options {
+  text-align: center;
+}
+
+.login-options p {
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.login-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.login-link {
+  color: #0A2540;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.login-link:hover {
+  background: #0A2540;
+  color: white;
+  text-decoration: none;
+  border-color: #0A2540;
+}
+
+.separator {
+  color: #d1d5da;
+  font-weight: 400;
 }
 
 .hero-image {
@@ -180,6 +222,18 @@
   background: #00A085;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0,196,154,0.3);
+}
+
+.btn-company {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.btn-company:hover {
+  background: #5a6fd8;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102,126,234,0.3);
 }
 
 .btn-outline {

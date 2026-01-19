@@ -1,0 +1,65 @@
+<div class="projects-container">
+  <div class="projects-header">
+    <h2>My Projects</h2>
+    <button class="btn-primary" [routerLink]="['/create-project']">
+      <i class="icon-plus"></i>
+      Create New Project
+    </button>
+  </div>
+
+  <div *ngIf="loading()" class="loading">
+    Loading your projects...
+  </div>
+
+  <div *ngIf="error()" class="error">
+    {{ error() }}
+    <button (click)="loadProjects()" class="btn-retry">Retry</button>
+  </div>
+
+  <div *ngIf="!loading() && !error() && projects().length === 0" class="empty-state">
+    <div class="empty-icon">📁</div>
+    <h3>No Projects Yet</h3>
+    <p>Create your first project to get started with finding collaborators.</p>
+    <button class="btn-primary" [routerLink]="['/create-project']">
+      Create Your First Project
+    </button>
+  </div>
+
+  <div *ngIf="!loading() && !error() && projects().length > 0" class="projects-grid">
+    <div *ngFor="let project of projects()" class="project-card">
+      <div class="project-header">
+        <h3 class="project-title">{{ project.name }}</h3>
+        <span class="project-creator" *ngIf="project.creatorUsername">
+          by {{ project.creatorUsername }}
+        </span>
+      </div>
+      
+      <p class="project-description">{{ project.description }}</p>
+      
+      <div class="project-details" *ngIf="project.country || project.language">
+        <span *ngIf="project.country" class="project-detail">
+          📍 {{ project.country }}
+        </span>
+        <span *ngIf="project.language" class="project-detail">
+          💬 {{ project.language }}
+        </span>
+      </div>
+      
+      <div class="project-meta">
+        <span class="project-date">Created: {{ formatDate(project.createdAt) }}</span>
+      </div>
+      
+      <div class="project-actions">
+        <button class="btn-secondary" [routerLink]="['/projects', project.id]">
+          View Details
+        </button>
+        <button class="btn-secondary" [routerLink]="['/projects', project.id, 'edit']">
+          Edit
+        </button>
+        <button class="btn-danger" (click)="deleteProject(project.id)">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

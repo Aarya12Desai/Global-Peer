@@ -32,7 +32,7 @@ public class Post {
     @Column(nullable = false, length = 1000)
     private String content;
     
-    @Column(name = "image_url")
+    @Column(name = "image_url", columnDefinition = "LONGTEXT")
     private String imageUrl;
     
     @ManyToOne(fetch = FetchType.LAZY)

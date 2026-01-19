@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.auth.dto.CompanyRegisterRequest;
 import com.example.auth.dto.JwtResponse;
 import com.example.auth.dto.LoginRequest;
 import com.example.auth.dto.MessageResponse;
@@ -35,6 +36,17 @@ public class AuthController {
             return ResponseEntity.badRequest()
                 .body(new MessageResponse("Error: " + e.getMessage()));
         } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest()
+                .body(new MessageResponse("Error: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/company-signup")
+    public ResponseEntity<?> registerCompany(@RequestBody CompanyRegisterRequest request) {
+        try {
+            JwtResponse jwtResponse = authService.registerCompany(request);
+            return ResponseEntity.ok(jwtResponse);
+        } catch (UserAlreadyExistsException | IllegalArgumentException e) {
             return ResponseEntity.badRequest()
                 .body(new MessageResponse("Error: " + e.getMessage()));
         }

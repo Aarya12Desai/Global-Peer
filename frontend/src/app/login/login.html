@@ -1,6 +1,10 @@
 <div class="login-page">
   <div class="login-container">
-    <h2>Login</h2>
+    <div class="login-header">
+      <h2>User Login</h2>
+      <p class="subtitle">Access your personal dashboard</p>
+    </div>
+    
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       @if (errorMessage) {
         <div class="error-message">{{ errorMessage }}</div>
@@ -15,12 +19,6 @@
 
       <label for="password">Password</label>
       <input type="password" id="password" name="password" formControlName="password" required>
-
-      <label for="role">Login as</label>
-      <select id="role" formControlName="role">
-        <option value="student">Student</option>
-        <option value="company">Company</option>
-      </select>
       <div *ngIf="password?.touched && password?.errors" class="field-error">
         <div *ngIf="password?.errors?.['required']">Password is required.</div>
         <div *ngIf="password?.errors?.['minlength']">Password must be at least 6 characters.</div>
@@ -34,6 +32,21 @@
         }
       </button>
     </form>
-    <p>Don't have an account? <a routerLink="/signup">Sign up</a></p>
+    
+    <div class="login-footer">
+      <div class="alternative-login">
+        <p>Are you a company?</p>
+        <a routerLink="/company-login" class="company-login-link">Company Login</a>
+      </div>
+      
+      <div class="signup-links">
+        <p>Don't have an account?</p>
+        <div class="signup-options">
+          <a routerLink="/signup" class="signup-link">Sign up as User</a>
+          <span class="divider">|</span>
+          <a routerLink="/signupCompany" class="signup-link">Sign up as Company</a>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

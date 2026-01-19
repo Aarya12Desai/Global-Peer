@@ -7,6 +7,10 @@ public class JwtResponse {
     private String username;
     private String email;
     private String role;
+    private String companyName;
+    private String companyWebsite;
+    private String companyContactName;
+    private String companyContactPhone;
     
     public JwtResponse(String accessToken, Long id, String username, String email, String role) {
         this.token = accessToken;
@@ -14,6 +18,19 @@ public class JwtResponse {
         this.username = username;
         this.email = email;
         this.role = role;
+    }
+    
+    public JwtResponse(String accessToken, Long id, String username, String email, String role,
+                      String companyName, String companyWebsite, String companyContactName, String companyContactPhone) {
+        this.token = accessToken;
+        this.id = id;
+        this.username = username;
+        this.email = email;
+        this.role = role;
+        this.companyName = companyName;
+        this.companyWebsite = companyWebsite;
+        this.companyContactName = companyContactName;
+        this.companyContactPhone = companyContactPhone;
     }
     
     // Getters and setters
@@ -63,5 +80,37 @@ public class JwtResponse {
     
     public void setRole(String role) {
         this.role = role;
+    }
+    
+    public String getCompanyName() {
+        return companyName;
+    }
+    
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+    
+    public String getCompanyWebsite() {
+        return companyWebsite;
+    }
+    
+    public void setCompanyWebsite(String companyWebsite) {
+        this.companyWebsite = companyWebsite;
+    }
+    
+    public String getCompanyContactName() {
+        return companyContactName;
+    }
+    
+    public void setCompanyContactName(String companyContactName) {
+        this.companyContactName = companyContactName;
+    }
+    
+    public String getCompanyContactPhone() {
+        return companyContactPhone;
+    }
+    
+    public void setCompanyContactPhone(String companyContactPhone) {
+        this.companyContactPhone = companyContactPhone;
     }
 }
