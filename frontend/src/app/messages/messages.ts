@@ -1,5 +1,4 @@
 import { Component, ElementRef, ViewChild, AfterViewChecked, signal, computed, inject, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Messages as MessagesService, Conversation, Message } from '../services/messages';
@@ -14,7 +13,6 @@ export class Messages implements OnInit, AfterViewChecked {
   @ViewChild('messagesContainer') messagesContainer!: ElementRef;
 
   private messagesService = inject(MessagesService);
-  private route = inject(ActivatedRoute);
   
   // Search functionality
   searchQuery = signal('');
@@ -50,30 +48,7 @@ export class Messages implements OnInit, AfterViewChecked {
   private shouldScrollToBottom = false;
 
   ngOnInit() {
-    // Always respond to query param changes to select the correct conversation
-    this.route.queryParams.subscribe(params => {
-      const participantId = params['user'];
-      if (participantId) {
-        // Try to find the conversation
-        let conv = this.messagesService.conversations.find(c => c.participantId === participantId);
-        if (!conv) {
-          // Fallback: create a minimal conversation if not found
-          conv = {
-            id: `conv-${participantId}`,
-            participantId,
-            participantName: participantId,
-            participantAvatar: participantId.substring(0,2).toUpperCase(),
-            lastMessage: '',
-            lastMessageTime: new Date(),
-            unreadCount: 0,
-            online: false,
-            messages: []
-          };
-          this.messagesService.addConversation(conv);
-        }
-        this.selectConversation(conv.id);
-      }
-    });
+    // Service loads sample conversations automatically in constructor
   }
 
   ngAfterViewChecked() {

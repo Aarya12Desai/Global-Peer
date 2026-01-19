@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PostService } from '../services/post.service';
 import { Post } from '../models/post.model';
@@ -26,11 +26,7 @@ import { CommentsComponent } from './comments.component';
       <!-- Post Content -->
       <div class="post-content">
         <p>{{ post.content }}</p>
-        <img *ngIf="post.imageUrl && !imageLoadError" 
-             [src]="resolveImageUrl(post.imageUrl)" 
-             (error)="onImageError()" 
-             alt="Post image" 
-             class="post-image">
+        <img *ngIf="post.imageUrl" [src]="post.imageUrl" alt="Post image" class="post-image">
       </div>
 
       <!-- Post Stats -->
@@ -51,12 +47,12 @@ import { CommentsComponent } from './comments.component';
           {{ post.isLikedByCurrentUser ? 'Unlike' : 'Like' }}
         </button>
         
-        <button class="action-btn comment-btn" (click)="toggleComments(true)">
-          Comment
+        <button class="action-btn comment-btn" (click)="toggleComments()">
+          💬 Comment
         </button>
         
-        <button class="action-btn view-btn" (click)="toggleComments(false)">
-          View
+        <button class="action-btn share-btn">
+          🔄 Share
         </button>
       </div>
 
@@ -64,7 +60,6 @@ import { CommentsComponent } from './comments.component';
       <app-comments 
         *ngIf="showComments" 
         [postId]="post.id"
-        [showAddCommentBox]="showAddCommentBox"
         class="comments-section">
       </app-comments>
     </article>
@@ -197,9 +192,7 @@ export class PostComponent {
   @Output() postUpdated = new EventEmitter<Post>();
 
   showComments = false;
-  showAddCommentBox = false;
   isLiking = false;
-  imageLoadError = false;
 
   constructor(private postService: PostService) {}
 
@@ -225,41 +218,8 @@ export class PostComponent {
     });
   }
 
-  toggleComments(addBox: boolean) {
-    this.showAddCommentBox = addBox;
-    this.showComments = true;
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['post']) {
-      this.imageLoadError = false;
-    }
-  }
-
-  resolveImageUrl(url: string | undefined): string | undefined {
-    if (!url) return url;
-    try {
-      const u = url.trim();
-      const wikiFileIndex = u.indexOf('/wiki/File:');
-      if (wikiFileIndex !== -1) {
-        const filename = u.substring(wikiFileIndex + '/wiki/File:'.length);
-        return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}`;
-      }
-
-      const wpFileParam = u.match(/title=File:(.+)$/i);
-      if (wpFileParam && wpFileParam[1]) {
-        return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(wpFileParam[1])}`;
-      }
-
-      return u;
-    } catch (err) {
-      console.warn('Failed to resolve image URL', url, err);
-      return url;
-    }
-  }
-
-  onImageError() {
-    this.imageLoadError = true;
+  toggleComments() {
+    this.showComments = !this.showComments;
   }
 
   getRelativeTime(dateString: string): string {

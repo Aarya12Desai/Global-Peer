@@ -7,55 +7,21 @@
     </div>
     <div class="nav-links">
       <ng-container *ngIf="(authService.authState | async); else guestLinks">
-        <!-- User specific navigation -->
-        <ng-container *ngIf="getUserRole() === 'USER'">
-          <a routerLink="/home" class="nav-link">Home</a>
-          <a routerLink="/projects" class="nav-link">My Projects</a>
-          <a routerLink="/browse-projects" class="nav-link">Browse Projects</a>
-          <a routerLink="/ai-matching" class="nav-link">AI Matching</a>
-          <a routerLink="/notifications" class="nav-link notifications-link">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="2"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span *ngIf="unreadNotificationsCount > 0" class="notification-badge">{{unreadNotificationsCount}}</span>
-          </a>
-          <a routerLink="/messages" class="nav-link messages-link">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span *ngIf="totalUnreadMessages > 0" class="notification-badge">{{totalUnreadMessages}}</span>
-          </a>
-          <button class="nav-link" title="Create project" (click)="showCreateProject = !showCreateProject">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M12 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-        </ng-container>
-
-        <!-- Company specific navigation -->
-        <ng-container *ngIf="getUserRole() === 'COMPANY'">
-          <a routerLink="/company/home" class="nav-link">Dashboard</a>
-          <a routerLink="/company/projects" class="nav-link">Manage Projects</a>
-          <a routerLink="/company/community-chat" class="nav-link">Community Chat</a>
-          <a routerLink="/ai-matching" class="nav-link">AI Matching</a>
-          <a routerLink="/notifications" class="nav-link notifications-link">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="2"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span *ngIf="unreadNotificationsCount > 0" class="notification-badge">{{unreadNotificationsCount}}</span>
-          </a>
-          <a routerLink="/messages" class="nav-link messages-link">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span *ngIf="totalUnreadMessages > 0" class="notification-badge">{{totalUnreadMessages}}</span>
-          </a>
-        </ng-container>
-
-        <span class="nav-user">Welcome, {{ (authService.currentUser$ | async)?.username }}!</span>
+        <a routerLink="/home" class="nav-link">Home</a>
+        <a routerLink="/notifications" class="nav-link notifications-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="2"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <span *ngIf="unreadNotificationsCount > 0" class="notification-badge">{{unreadNotificationsCount}}</span>
+        </a>
+        <a routerLink="/messages" class="nav-link messages-link">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <span *ngIf="totalUnreadMessages > 0" class="notification-badge">{{totalUnreadMessages}}</span>
+        </a>
+  <span class="nav-user">Welcome, {{ (authService.currentUser$ | async)?.username }}!</span>
         <button class="nav-logout" (click)="logout()">Logout</button>
       </ng-container>
       <ng-template #guestLinks>
@@ -64,10 +30,6 @@
       </ng-template>
     </div>
   </nav>
-
-  <div *ngIf="showCreateProject" style="padding:1rem; background:#f8fafc;">
-    <app-create-project (projectCreated)="showCreateProject = false"></app-create-project>
-  </div>
 
   <router-outlet />
 </div>

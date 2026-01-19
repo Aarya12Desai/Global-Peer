@@ -6,11 +6,10 @@ import { CommonModule, AsyncPipe } from '@angular/common';
 import { Auth } from './services/auth';
 import { Notifications } from './services/notifications';
 import { Messages } from './services/messages';
-import { CreateProjectComponent } from './components/create-project.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, FormsModule, CommonModule, AsyncPipe, CreateProjectComponent],
+  imports: [RouterOutlet, RouterLink, FormsModule, CommonModule, AsyncPipe],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -22,8 +21,6 @@ export class App {
     private notificationsService: Notifications,
     private messagesService: Messages
   ) {}
-
-  showCreateProject = false;
 
   get isLoggedIn() {
     return this.authService.isLoggedIn;
@@ -43,10 +40,5 @@ export class App {
 
   logout() {
     this.authService.logout();
-  }
-
-  getUserRole(): string | null {
-    const user = this.authService.currentUser;
-    return user ? user.role : null;
   }
 }
